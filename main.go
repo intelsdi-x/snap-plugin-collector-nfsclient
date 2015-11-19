@@ -34,9 +34,9 @@ func main() {
 	//   the implementation satfiying plugin.CollectorPlugin
 
 	// Define metadata about Plugin
-	meta := cmd.Meta()
+	meta := nfsclient.Meta()
 	// meta.RPCType = plugin.JSONRPC
 
 	// Start a collector
-	plugin.Start(meta, new(cmd.NFSCollector), os.Args[1])
+	plugin.Start(meta, new(nfsclient.NFSCollector), os.Args[1])
 }

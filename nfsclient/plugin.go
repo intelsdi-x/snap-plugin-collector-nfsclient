@@ -17,20 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package samba
+package nfsclient
 
 import (
-	"fmt"
+	// "fmt"
 	"os"
-	"os/exec"
-	"strings"
+	// "strings"
 	"time"
-	"errors"
-	"encoding/json"
-
 	"github.com/intelsdi-x/pulse/control/plugin"
 	"github.com/intelsdi-x/pulse/control/plugin/cpolicy"
-	"github.com/intelsdi-x/pulse/core/ctypes"
 )
 
 const (
@@ -42,7 +37,7 @@ const (
 	Type = plugin.CollectorPluginType
 )
 
-var namespace_prefix = []string{"intel", "nfs", "client"}
+var namespacePrefix = []string{"intel", "nfs", "client"}
 
 type NFSCollector struct {
 }
@@ -54,27 +49,8 @@ func NewNFSCollector() *NFSCollector {
 // CollectMetrics collects metrics for testing
 func (f *NFSCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.PluginMetricType, error) {
 	for i := range mts {
-		if command, ok := mts[i].Config().Table()["command"]; ok {
-			str_command := command.(ctypes.ConfigValueStr)
-			parsed_command := strings.Split(str_command.Value, " ")
-			main_command := parsed_command[0]
-			var args []string
-			if len(parsed_command) > 1 {
-				args = parsed_command[1:len(parsed_command)]
-			} else {
-				args = make([]string, 0)
-  			}
-			out, error := exec.Command(main_command, args...).Output()
-			if error != nil {
-				return nil, errors.New(fmt.Sprint("Oh noes! An error ", error))
-			}
-			var decoded_data interface{}
-			json.Unmarshal(out, &decoded_data)
-			json_data := decoded_data.(map[string]interface{})
-			mts[i].Data_ = json_data["value"].(float64);
-			// Change the Namespace so it matches the namespace returned from the script
-			mts[i].Namespace_ = []string{"intel", "exec", json_data["namespace"].(string)}
-		}
+		mts[i].Data_ = "Test Value"
+		mts[i].Namespace_ = namespacePrefix
 		// TODO: Error handling
 		mts[i].Source_, _ = os.Hostname()
 		mts[i].Timestamp_ = time.Now()
@@ -86,16 +62,10 @@ func (f *NFSCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 //GetMetricTypes returns metric types for testing
 func (f *NFSCollector) GetMetricTypes(cfg plugin.PluginConfigType) ([]plugin.PluginMetricType, error) {
 	mts := []plugin.PluginMetricType{}
-	if _, ok := cfg.Table()["test-fail"]; ok {
-		return mts, fmt.Errorf("testing")
+	
+	for metric := range metricKeys {
+		mts = append(mts, plugin.PluginMetricType{Namespace_: append(namespacePrefix, metricKeys[metric]...)})
 	}
-	if _, ok := cfg.Table()["test"]; ok {
-		mts = append(mts, plugin.PluginMetricType{Namespace_: []string{"intel", "dummy", "test"}})
-	}
-
-	mts = append(mts, plugin.PluginMetricType{Namespace_: []string{"intel", "exec"}})
-
-	// TODO: specify multiple commands/namespaces in a single config?
 	return mts, nil
 }
 

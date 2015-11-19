@@ -3,10 +3,10 @@
     "GoVersion": "go1.4.2",
     "Deps": [
         {
-            "ImportPath": "github.com/intelsdi-x/pulse",
-            "Comment": "v0.8.0-beta",
-            "Rev": "de2881352745c206284b74f4ef1165ba4510971a"
-        },
+			"ImportPath": "github.com/intelsdi-x/pulse",
+			"Comment": "v0.8.0-beta",
+			"Rev": "de2881352745c206284b74f4ef1165ba4510971a"
+		},
         {
             "ImportPath": "github.com/shirou/gopsutil",
             "Comment": "1.0.0-64-g64357f0",
