@@ -19,10 +19,13 @@ limitations under the License.
 
 package nfsclient
 
-// import (
-//     // "github.com/shirou/gopsutil/net"
-//     "os"
-// )
+import (
+    // "github.com/shirou/gopsutil/net"
+    "os"
+    "bufio"
+    "strings"
+    "strconv"
+)
 
 var metricKeys = [][]string {
     {"num_connections"},
@@ -50,9 +53,7 @@ var metricKeys = [][]string {
     {"nfsv3","pathconf"},
 }
 
-
-
-var nfsstat_positions = map[string]int {
+var nfsstatPositions = map[string]int {
     "getattr": 3,
     "setattr": 4,
     "lookup": 5,
@@ -73,10 +74,56 @@ var nfsstat_positions = map[string]int {
     "pathconf": 22,
 }
 
-var rpc_positions = map[string]int {
+var rpcPositions = map[string]int {
     "calls": 1,
     "retransmissions": 2,
     "authrefresh": 3,
 }
 
-// var processes = []*(process.NetConnectionStat){}
+var nfsFileMapping = map[string]string {
+    "net": "net",
+    "rpc": "rpc",
+    "proc2": "nfsv2",
+    "proc3": "nfsv3",
+    "proc4": "nfsv4",
+}
+
+// 
+var nfsStats map[string][]string //Remember to initialize when first loading data
+func getNFSMetric(nfsType string, statName string) int  {
+    //If the stats have not been created, create them
+    if nfsStats == nil {
+        generateNFSStats()
+    }
+    // Throw away the error
+    value, _ := strconv.Atoi(nfsStats[nfsType][nfsstatPositions[statName]])
+    return value
+}
+
+func getRPCMetric(statName string) int {
+    //If the stats have not been created, create them
+    if nfsStats == nil {
+        generateNFSStats()
+    }
+     // Throw away the error
+    value, _ := strconv.Atoi(nfsStats["rpc"][rpcPositions[statName]])
+    return value
+}
+
+// var connections []*(process.NetConnectionStat)
+func getOtherMetric(statName string) int  {
+    // Do a switch here to check for those other metrics 
+    return 0
+}
+
+func generateNFSStats() {
+    nfsStats = make(map[string][]string)
+    file, _ := os.Open("/proc/net/rpc/nfs")
+    scanner := bufio.NewScanner(bufio.NewReader(file))
+    for scanner.Scan() {
+        processedLine := strings.Split(scanner.Text(), " ")
+        // Get the line name
+        lineName := processedLine[0]
+        nfsStats[nfsFileMapping[lineName]] = processedLine
+    }
+}

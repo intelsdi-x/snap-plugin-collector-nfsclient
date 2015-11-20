@@ -22,7 +22,7 @@ package nfsclient
 import (
 	// "fmt"
 	"os"
-	// "strings"
+	"strings"
 	"time"
 	"github.com/intelsdi-x/pulse/control/plugin"
 	"github.com/intelsdi-x/pulse/control/plugin/cpolicy"
@@ -48,9 +48,18 @@ func NewNFSCollector() *NFSCollector {
 
 // CollectMetrics collects metrics for testing
 func (f *NFSCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.PluginMetricType, error) {
+	if len(mts) == 0 {
+		return nil, nil
+	}
 	for i := range mts {
-		mts[i].Data_ = "Test Value"
-		mts[i].Namespace_ = namespacePrefix
+		importantNamespace := mts[i].Namespace_[len(namespacePrefix):]
+		if namespaceContains("nfs", importantNamespace) {
+			mts[i].Data_ = getNFSMetric(importantNamespace[0], importantNamespace[1])
+		} else if namespaceContains("rpc", importantNamespace) {
+			mts[i].Data_ = getRPCMetric(importantNamespace[1])
+		} else { //Then it is one of the top level
+			mts[i].Data_ = 	getOtherMetric(importantNamespace[0])
+		}
 		// TODO: Error handling
 		mts[i].Source_, _ = os.Hostname()
 		mts[i].Timestamp_ = time.Now()
@@ -82,4 +91,13 @@ func (f *NFSCollector) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 //Meta returns meta data for testing
 func Meta() *plugin.PluginMeta {
 	return plugin.NewPluginMeta(Name, Version, Type, []string{plugin.PulseGOBContentType}, []string{plugin.PulseGOBContentType})
+}
+
+func namespaceContains(element string, slice []string) bool {
+	for _, v := range slice {
+		if strings.Contains(v, element) {
+			return true
+		}
+	}
+	return false
 }
