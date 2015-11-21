@@ -20,7 +20,6 @@ limitations under the License.
 package nfsclient
 
 import (
-    // "github.com/shirou/gopsutil/net"
     "os"
     "bufio"
     "strings"
@@ -88,13 +87,38 @@ var nfsFileMapping = map[string]string {
     "proc4": "nfsv4",
 }
 
-// 
-var nfsStats map[string][]string //Remember to initialize when first loading data
+func computeConnections() int {
+    count := 0
+    file, _ := os.Open("/proc/net/tcp")
+    scanner := bufio.NewScanner(bufio.NewReader(file))
+    for scanner.Scan() {
+        //NFS port in hex is 0801 (2049 in decimal), we can change this to be flexible for other ports later
+        if strings.Contains(scanner.Text(), ":0801") {
+            count++
+        }
+    }
+    return count
+}
+
+func computeMounts() int {
+    count := 0
+    file, _ := os.Open("/proc/mounts")
+    scanner := bufio.NewScanner(bufio.NewReader(file))
+    for scanner.Scan() {
+        if strings.Contains(scanner.Text(), " nfs ") {
+            count++
+        }
+    }
+    return count
+}
+//Find a way to cache the results so we don't have to lookup each time
+// var nfsStats map[string][]string //Remember to initialize when first loading data
 func getNFSMetric(nfsType string, statName string) int  {
     //If the stats have not been created, create them
-    if nfsStats == nil {
-        generateNFSStats()
-    }
+    // if nfsStats == nil {
+    //     generateNFSStats()
+    // }
+    nfsStats := generateNFSStats()
     // Throw away the error
     value, _ := strconv.Atoi(nfsStats[nfsType][nfsstatPositions[statName]])
     return value
@@ -102,22 +126,28 @@ func getNFSMetric(nfsType string, statName string) int  {
 
 func getRPCMetric(statName string) int {
     //If the stats have not been created, create them
-    if nfsStats == nil {
-        generateNFSStats()
-    }
-     // Throw away the error
+    // if nfsStats == nil {
+    //     generateNFSStats()
+    // }
+    nfsStats := generateNFSStats()
+    // Throw away the error
     value, _ := strconv.Atoi(nfsStats["rpc"][rpcPositions[statName]])
     return value
 }
 
 // var connections []*(process.NetConnectionStat)
 func getOtherMetric(statName string) int  {
-    // Do a switch here to check for those other metrics 
-    return 0
+    var value int
+    switch statName {
+    case "num_conditions": value = computeConnections()
+    case "num_mounts": value = computeMounts()
+    //Handle a default case?
+    }
+    return value
 }
 
-func generateNFSStats() {
-    nfsStats = make(map[string][]string)
+func generateNFSStats() map[string][]string {
+    nfsStats := make(map[string][]string)
     file, _ := os.Open("/proc/net/rpc/nfs")
     scanner := bufio.NewScanner(bufio.NewReader(file))
     for scanner.Scan() {
@@ -126,4 +156,5 @@ func generateNFSStats() {
         lineName := processedLine[0]
         nfsStats[nfsFileMapping[lineName]] = processedLine
     }
+    return nfsStats
 }
