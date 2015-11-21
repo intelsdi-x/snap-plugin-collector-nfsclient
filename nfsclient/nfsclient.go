@@ -111,14 +111,13 @@ func computeMounts() int {
     }
     return count
 }
-//Find a way to cache the results so we don't have to lookup each time
-// var nfsStats map[string][]string //Remember to initialize when first loading data
+//Cache the results here for each run
+var nfsStats map[string][]string
 func getNFSMetric(nfsType string, statName string) int  {
     //If the stats have not been created, create them
-    // if nfsStats == nil {
-    //     generateNFSStats()
-    // }
-    nfsStats := generateNFSStats()
+    if nfsStats == nil {
+        generateNFSStats()
+    }
     // Throw away the error
     value, _ := strconv.Atoi(nfsStats[nfsType][nfsstatPositions[statName]])
     return value
@@ -126,10 +125,9 @@ func getNFSMetric(nfsType string, statName string) int  {
 
 func getRPCMetric(statName string) int {
     //If the stats have not been created, create them
-    // if nfsStats == nil {
-    //     generateNFSStats()
-    // }
-    nfsStats := generateNFSStats()
+    if nfsStats == nil {
+        generateNFSStats()
+    }
     // Throw away the error
     value, _ := strconv.Atoi(nfsStats["rpc"][rpcPositions[statName]])
     return value
@@ -146,8 +144,8 @@ func getOtherMetric(statName string) int  {
     return value
 }
 
-func generateNFSStats() map[string][]string {
-    nfsStats := make(map[string][]string)
+func generateNFSStats() {
+    nfsStats = make(map[string][]string)
     file, _ := os.Open("/proc/net/rpc/nfs")
     scanner := bufio.NewScanner(bufio.NewReader(file))
     for scanner.Scan() {
@@ -156,5 +154,4 @@ func generateNFSStats() map[string][]string {
         lineName := processedLine[0]
         nfsStats[nfsFileMapping[lineName]] = processedLine
     }
-    return nfsStats
 }

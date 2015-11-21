@@ -51,6 +51,8 @@ func (f *NFSCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 	if len(mts) == 0 {
 		return nil, nil
 	}
+	//Generate the data cache for this run
+	generateNFSStats()
 	for i := range mts {
 		importantNamespace := mts[i].Namespace_[len(namespacePrefix):]
 		if namespaceContains("nfs", importantNamespace) {
