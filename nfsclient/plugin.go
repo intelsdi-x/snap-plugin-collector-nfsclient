@@ -54,6 +54,7 @@ func (f *NFSCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 	//Generate the data cache for this run
 	generateNFSStats()
 	for i := range mts {
+		//This throws away the common namespace prefix and returns only them important parts
 		importantNamespace := mts[i].Namespace_[len(namespacePrefix):]
 		if namespaceContains("nfs", importantNamespace) {
 			mts[i].Data_ = getNFSMetric(importantNamespace[0], importantNamespace[1])
@@ -70,11 +71,11 @@ func (f *NFSCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 	return mts, nil
 }
 
-//GetMetricTypes returns metric types for testing
+//GetMetricTypes returns metric types
 func (f *NFSCollector) GetMetricTypes(cfg plugin.PluginConfigType) ([]plugin.PluginMetricType, error) {
 	mts := []plugin.PluginMetricType{}
 	
-	for metric := range metricKeys {
+	for metric := range getMetricKeys() {
 		mts = append(mts, plugin.PluginMetricType{Namespace_: append(namespacePrefix, metricKeys[metric]...)})
 	}
 	return mts, nil

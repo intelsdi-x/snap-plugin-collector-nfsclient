@@ -26,30 +26,32 @@ import (
     "strconv"
 )
 
+var nfsValues = []string {
+    "getattr",
+    "setattr",
+    "lookup",
+    "access",
+    "readlink",
+    "read",
+    "write",
+    "create",
+    "mkdir",
+    "remove",
+    "rmdir",
+    "rename",
+    "link",
+    "readdir",
+    "readdirplus",
+    "fsstat",
+    "fsinfo",
+    "pathconf",
+}
 var metricKeys = [][]string {
     {"num_connections"},
     {"num_mounts"},
     {"rpc","calls"},
     {"rpc","retransmissions"},
     {"rpc","authrefresh"},
-    {"nfsv3","getattr"},
-    {"nfsv3","setattr"},
-    {"nfsv3","lookup"},
-    {"nfsv3","access"},
-    {"nfsv3","readlink"},
-    {"nfsv3","read"},
-    {"nfsv3","write"},
-    {"nfsv3","create"},
-    {"nfsv3","mkdir"},
-    {"nfsv3","remove"},
-    {"nfsv3","rmdir"},
-    {"nfsv3","rename"},
-    {"nfsv3","link"},
-    {"nfsv3","readdir"},
-    {"nfsv3","readdirplus"},
-    {"nfsv3","fsstat"},
-    {"nfsv3","fsinfo"},
-    {"nfsv3","pathconf"},
 }
 
 var nfsstatPositions = map[string]int {
@@ -85,6 +87,17 @@ var nfsFileMapping = map[string]string {
     "proc2": "nfsv2",
     "proc3": "nfsv3",
     "proc4": "nfsv4",
+}
+
+func getMetricKeys() [][]string {
+    // This just creates all the same measurements for nfsv2,3,and 4. They all have the same measurement values
+    for proto := 2; proto < 5; proto++ {
+        for i := range nfsValues {
+            var value = []string {"nfsv" + strconv.Itoa(proto), nfsValues[i]}
+            metricKeys = append(metricKeys, value)
+        }   
+    }
+    return metricKeys
 }
 
 func computeConnections() int {
