@@ -20,151 +20,97 @@ limitations under the License.
 package nfsclient
 
 import (
-    "os"
-    "bufio"
-    "strings"
-    "strconv"
+	// "fmt"
+	"os"
+	"strings"
+	"time"
+	"github.com/intelsdi-x/pulse/control/plugin"
+	"github.com/intelsdi-x/pulse/control/plugin/cpolicy"
 )
 
-var nfsValues = []string {
-    "getattr",
-    "setattr",
-    "lookup",
-    "access",
-    "readlink",
-    "read",
-    "write",
-    "create",
-    "mkdir",
-    "remove",
-    "rmdir",
-    "rename",
-    "link",
-    "readdir",
-    "readdirplus",
-    "fsstat",
-    "fsinfo",
-    "pathconf",
-}
-var metricKeys = [][]string {
-    {"num_connections"},
-    {"num_mounts"},
-    {"rpc","calls"},
-    {"rpc","retransmissions"},
-    {"rpc","authrefresh"},
+const (
+	// Name of plugin
+	Name = "nfsclient"
+	// Version of plugin
+	Version = 1
+	// Type of plugin
+	Type = plugin.CollectorPluginType
+)
+
+var namespacePrefix = []string{"intel", "nfs", "client"}
+
+type nfsCollector struct {
+	stats getNFSStats
+	//TODO: Mockout proc reader
 }
 
-var nfsstatPositions = map[string]int {
-    "getattr": 3,
-    "setattr": 4,
-    "lookup": 5,
-    "access": 6,
-    "readlink": 7,
-    "read": 8,
-    "write": 9,
-    "create": 10,
-    "mkdir": 11,
-    "remove": 14,
-    "rmdir": 15,
-    "rename": 16,
-    "link": 17,
-    "readdir": 18,
-    "readdirplus": 19,
-    "fsstat": 20,
-    "fsinfo": 21,
-    "pathconf": 22,
+func NewNFSCollector(g getNFSStats) *nfsCollector {
+	return &nfsCollector{
+		g,
+	}
 }
 
-var rpcPositions = map[string]int {
-    "calls": 1,
-    "retransmissions": 2,
-    "authrefresh": 3,
+type getNFSStats interface {
+	getNFSMetric(string, string) int
+	getRPCMetric(string) int
+	getOtherMetric(string) int
+	getMetricKeys() [][]string
 }
 
-var nfsFileMapping = map[string]string {
-    "net": "net",
-    "rpc": "rpc",
-    "proc2": "nfsv2",
-    "proc3": "nfsv3",
-    "proc4": "nfsv4",
+// CollectMetrics collects metrics for testing
+func (f *nfsCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.PluginMetricType, error) {
+	if len(mts) == 0 {
+		return nil, nil
+	}
+
+	for i := range mts {
+		//This throws away the common namespace prefix and returns only them important parts
+		importantNamespace := mts[i].Namespace_[len(namespacePrefix):]
+		if namespaceContains("nfs", importantNamespace) {
+			mts[i].Data_ = f.stats.getNFSMetric(importantNamespace[0], importantNamespace[1])
+		} else if namespaceContains("rpc", importantNamespace) {
+			mts[i].Data_ = f.stats.getRPCMetric(importantNamespace[1])
+		} else { //Then it is one of the top level
+			mts[i].Data_ = 	f.stats.getOtherMetric(importantNamespace[0])
+		}
+		// TODO: Error handling
+		mts[i].Source_, _ = os.Hostname()
+		mts[i].Timestamp_ = time.Now()
+	}
+	// return nil, errors.New(fmt.Sprint(mts[0].Data_))
+	return mts, nil
 }
 
-func getMetricKeys() [][]string {
-    // This just creates all the same measurements for nfsv2,3,and 4. They all have the same measurement values
-    for proto := 2; proto < 5; proto++ {
-        for i := range nfsValues {
-            var value = []string {"nfsv" + strconv.Itoa(proto), nfsValues[i]}
-            metricKeys = append(metricKeys, value)
-        }   
-    }
-    return metricKeys
+//GetMetricTypes returns metric types
+func (f *nfsCollector) GetMetricTypes(cfg plugin.PluginConfigType) ([]plugin.PluginMetricType, error) {
+	mts := []plugin.PluginMetricType{}
+	
+	for metric := range f.stats.getMetricKeys() {
+		mts = append(mts, plugin.PluginMetricType{Namespace_: append(namespacePrefix, metricKeys[metric]...)})
+	}
+	return mts, nil
 }
 
-func computeConnections() int {
-    count := 0
-    file, _ := os.Open("/proc/net/tcp")
-    scanner := bufio.NewScanner(bufio.NewReader(file))
-    for scanner.Scan() {
-        //NFS port in hex is 0801 (2049 in decimal), we can change this to be flexible for other ports later
-        if strings.Contains(scanner.Text(), ":0801") {
-            count++
-        }
-    }
-    return count
+//GetConfigPolicy returns a ConfigPolicy for testing
+func (f *nfsCollector) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
+	c := cpolicy.New()
+	rule, _ := cpolicy.NewStringRule("command", true)
+	p := cpolicy.NewPolicyNode()
+	p.Add(rule)
+	c.Add([]string{"intel", "dummy", "exec"}, p)
+	return c, nil
 }
 
-func computeMounts() int {
-    count := 0
-    file, _ := os.Open("/proc/mounts")
-    scanner := bufio.NewScanner(bufio.NewReader(file))
-    for scanner.Scan() {
-        if strings.Contains(scanner.Text(), " nfs ") {
-            count++
-        }
-    }
-    return count
-}
-//Cache the results here for each run
-var nfsStats map[string][]string
-func getNFSMetric(nfsType string, statName string) int  {
-    //If the stats have not been created, create them
-    if nfsStats == nil {
-        generateNFSStats()
-    }
-    // Throw away the error
-    value, _ := strconv.Atoi(nfsStats[nfsType][nfsstatPositions[statName]])
-    return value
+//Meta returns meta data for testing
+func Meta() *plugin.PluginMeta {
+	return plugin.NewPluginMeta(Name, Version, Type, []string{plugin.PulseGOBContentType}, []string{plugin.PulseGOBContentType})
 }
 
-func getRPCMetric(statName string) int {
-    //If the stats have not been created, create them
-    if nfsStats == nil {
-        generateNFSStats()
-    }
-    // Throw away the error
-    value, _ := strconv.Atoi(nfsStats["rpc"][rpcPositions[statName]])
-    return value
-}
-
-// var connections []*(process.NetConnectionStat)
-func getOtherMetric(statName string) int  {
-    var value int
-    switch statName {
-    case "num_conditions": value = computeConnections()
-    case "num_mounts": value = computeMounts()
-    //Handle a default case?
-    }
-    return value
-}
-
-func generateNFSStats() {
-    nfsStats = make(map[string][]string)
-    file, _ := os.Open("/proc/net/rpc/nfs")
-    scanner := bufio.NewScanner(bufio.NewReader(file))
-    for scanner.Scan() {
-        processedLine := strings.Split(scanner.Text(), " ")
-        // Get the line name
-        lineName := processedLine[0]
-        nfsStats[nfsFileMapping[lineName]] = processedLine
-    }
+func namespaceContains(element string, slice []string) bool {
+	for _, v := range slice {
+		if strings.Contains(v, element) {
+			return true
+		}
+	}
+	return false
 }
