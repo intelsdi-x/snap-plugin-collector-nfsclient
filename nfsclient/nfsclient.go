@@ -24,8 +24,8 @@ import (
 	"os"
 	"strings"
 	"time"
-	"github.com/intelsdi-x/pulse/control/plugin"
-	"github.com/intelsdi-x/pulse/control/plugin/cpolicy"
+	"github.com/intelsdi-x/snap/control/plugin"
+	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
 )
 
 const (
@@ -53,7 +53,8 @@ func NewNFSCollector(g getNFSStats) *nfsCollector {
 type getNFSStats interface {
 	getNFSMetric(string, string) int
 	getRPCMetric(string) int
-	getOtherMetric(string) int
+	getNumConnections(int64) int
+	computeMounts() int
 	getMetricKeys() [][]string
 }
 
@@ -70,8 +71,10 @@ func (f *nfsCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 			mts[i].Data_ = f.stats.getNFSMetric(importantNamespace[0], importantNamespace[1])
 		} else if namespaceContains("rpc", importantNamespace) {
 			mts[i].Data_ = f.stats.getRPCMetric(importantNamespace[1])
-		} else { //Then it is one of the top level
-			mts[i].Data_ = 	f.stats.getOtherMetric(importantNamespace[0])
+		} else if namespaceContains("num_connections", importantNamespace) { //Then it is one of the top level
+			mts[i].Data_ = 	f.stats.getNumConnections(int64(2049))
+		} else if namespaceContains("num_mounts", importantNamespace) {
+			mts[i].Data_ = 	f.stats.computeMounts()
 		}
 		// TODO: Error handling
 		mts[i].Source_, _ = os.Hostname()
@@ -103,7 +106,7 @@ func (f *nfsCollector) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 
 //Meta returns meta data for testing
 func Meta() *plugin.PluginMeta {
-	return plugin.NewPluginMeta(Name, Version, Type, []string{plugin.PulseGOBContentType}, []string{plugin.PulseGOBContentType})
+	return plugin.NewPluginMeta(Name, Version, Type, []string{plugin.SnapGOBContentType}, []string{plugin.SnapGOBContentType})
 }
 
 func namespaceContains(element string, slice []string) bool {

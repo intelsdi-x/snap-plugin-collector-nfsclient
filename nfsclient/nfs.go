@@ -110,31 +110,6 @@ func (n *nfsClient) getMetricKeys() [][]string {
     return metricKeys
 }
 
-func computeConnections() int {
-    count := 0
-    file, _ := os.Open("/proc/net/tcp")
-    scanner := bufio.NewScanner(bufio.NewReader(file))
-    for scanner.Scan() {
-        //NFS port in hex is 0801 (2049 in decimal), we can change this to be flexible for other ports later
-        if strings.Contains(scanner.Text(), ":0801") {
-            count++
-        }
-    }
-    return count
-}
-
-func computeMounts() int {
-    count := 0
-    file, _ := os.Open("/proc/mounts")
-    scanner := bufio.NewScanner(bufio.NewReader(file))
-    for scanner.Scan() {
-        if strings.Contains(scanner.Text(), " nfs ") {
-            count++
-        }
-    }
-    return count
-}
-
 func (n *nfsClient) getNFSMetric(nfsType string, statName string) int  {
     // Throw away the error
     value, _ := strconv.Atoi(n.data[nfsType][nfsstatPositions[statName]])
@@ -146,16 +121,36 @@ func (n *nfsClient) getRPCMetric(statName string) int {
     value, _ := strconv.Atoi(n.data["rpc"][rpcPositions[statName]])
     return value
 }
-
-// var connections []*(process.NetConnectionStat)
-func (n *nfsClient) getOtherMetric(statName string) int  {
-    var value int
-    switch statName {
-    case "num_conditions": value = computeConnections()
-    case "num_mounts": value = computeMounts()
-    //Handle a default case?
+func (n *nfsClient) getNumConnections(portNum int64) int {
+    hexPort := strconv.FormatInt(portNum, 16)
+    // TODO: Errors for out of range port
+	if len(hexPort) < 4 {
+		zerosNeeded := 4 - len(hexPort)
+		for i := 0; i < zerosNeeded; i++ {
+			hexPort = "0" + hexPort
+		}
+	}
+    count := 0
+    file, _ := os.Open("/proc/net/tcp")
+    scanner := bufio.NewScanner(bufio.NewReader(file))
+    for scanner.Scan() {
+        if strings.Contains(scanner.Text(), ":" + hexPort) {
+            count++
+        }
     }
-    return value
+    return count
+}
+
+func (n *nfsClient) computeMounts() int {
+    count := 0
+    file, _ := os.Open("/proc/mounts")
+    scanner := bufio.NewScanner(bufio.NewReader(file))
+    for scanner.Scan() {
+        if strings.Contains(scanner.Text(), " nfs ") {
+            count++
+        }
+    }
+    return count
 }
 
 func generate() map[string][]string {
