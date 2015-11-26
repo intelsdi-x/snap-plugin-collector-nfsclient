@@ -153,6 +153,10 @@ func (n *nfsClient) computeMounts() int {
     return count
 }
 
+func (n *nfsClient) regenerate() {
+    n.data = generate()
+}
+
 func generate() map[string][]string {
     nfsStats := make(map[string][]string)
     file, _ := os.Open("/proc/net/rpc/nfs")

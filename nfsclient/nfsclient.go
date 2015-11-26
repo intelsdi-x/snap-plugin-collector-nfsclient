@@ -44,6 +44,7 @@ type nfsCollector struct {
 	//TODO: Mockout proc reader
 }
 
+// NewNFSCollector returns and nfsCollector implementation
 func NewNFSCollector(g getNFSStats) *nfsCollector {
 	return &nfsCollector{
 		g,
@@ -56,6 +57,7 @@ type getNFSStats interface {
 	getNumConnections(int64) int
 	computeMounts() int
 	getMetricKeys() [][]string
+	regenerate()
 }
 
 // CollectMetrics collects metrics for testing
@@ -63,6 +65,9 @@ func (f *nfsCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 	if len(mts) == 0 {
 		return nil, nil
 	}
+	
+	//Find a way to regenerate the data on each task run automatically. We shouldn't do this manually
+	f.stats.regenerate()
 
 	for i := range mts {
 		//This throws away the common namespace prefix and returns only them important parts
