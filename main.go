@@ -25,7 +25,7 @@ import (
 	// Import the snap plugin library
 	"github.com/intelsdi-x/snap/control/plugin"
 	// Import our collector plugin implementation
-	"github.com/intelsdi-x/snap-plugin-collector-nfsclient/nfsclient"
+	"github.com/thomastaylor312/snap-plugin-collector-nfsclient/nfsclient"
 )
 
 func main() {
