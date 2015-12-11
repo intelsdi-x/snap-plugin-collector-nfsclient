@@ -82,7 +82,7 @@ By default iostat executable binary are searched in the directories named by the
 
 ## Documentation
 
-To learn more about this plugin and iostat tool, visit:
+To learn more about this plugin:
 
 * [snap nfsclient examples](#examples)
 
