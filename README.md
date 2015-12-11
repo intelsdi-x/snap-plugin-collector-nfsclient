@@ -17,41 +17,159 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-## Pulse Collector Plugin Structure
----
+# snap collector plugin - nfsclient
 
-#### Plugin binary
+This plugin collects NFS client statistics from any system that has NFS tools installed
 
-./main.go
+Used for monitoring the rate of change in NFS ops 
 
-#### Collector Implementation
+The intention for this plugin is to identify which hosts could be having slowness issues or problems with NFS.
 
-./collector/collector.go
+This plugin is used in the [snap framework] (http://github.com/intelsdi-x/snap).
 
-#### JSON RPC examples (using curl)
 
-If calling a GO based plugin you will want to ensure that the plugin is started in JSON RPC mode.  This is done by setting the plugins meta data field RPCType to plugin.JSONRPC. 
+1. [Getting Started](#getting-started)
+  * [System Requirements](#system-requirements)
+  * [Installation](#installation)
+  * [Configuration and Usage](#configuration-and-usage)
+2. [Documentation](#documentation)
+  * [Collected Metrics](#collected-metrics)
+  * [Examples](#examples)
+  * [Roadmap](#roadmap)
+3. [Community Support](#community-support)
+4. [Contributing](#contributing)
+5. [License](#license)
+6. [Acknowledgements](#acknowledgements)
 
-You can start a plugin manually for testing by increasing the ping timeout duration.  The timeout will be reset each time you call into the plugin.
+## Getting Started
 
+In order to use this plugin you need "nfs-client" to be installed on a Linux target host.
+
+### System Requirements
+
+* Linux OS
+* [nfs-client package] (#installation)
+* [golang 1.5+](https://golang.org/dl/)
+
+### Installation
+
+#### Install nfs-client package:
+To install sysstat package from the official repositories simply use:
+- For Ubuntu, Debian: `sudo apt-get install nfs-client`
+- For CentOS, Fedora: `sudo yum install nfs-client`
+
+#### To build the plugin binary:
+Get the source by running a `go get` to fetch the code:
 ```
-./pulse-collector-dummy2 '{"NoDaemon": false, "PingTimeoutDuration": 1000000000000}'
+$ go get github.com/thomastaylor312/snap-plugin-collector-nfsclient
 ```
 
-###### GetConfigPolicy
+Build the plugin by running make within the cloned repo:
+```
+$ cd $GOPATH/src/github.com/thomastaylor312/snap-plugin-collector-nfsclient && make
+```
+This builds the plugin in `/build/rootfs/`
 
-```
-curl -d '{"method": "Collector.GetConfigPolicy", "params": [], "id": 1}' http://127.0.0.1:<REPLACE WITH PORT> | python -m "json.tool"
-```
+#### Builds
+You can also download prebuilt binaries for OS X and Linux (64-bit) at the [releases](https://github.com/thomastaylor312/snap-plugin-collector-nfsclient/releases) page
 
-###### GetMetricTypes
+### Configuration and Usage
+* Set up the [snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started)
+* Ensure `$SNAP_PATH` is exported  
+`export SNAP_PATH=$GOPATH/src/github.com/intelsdi-x/snap/build`
 
-```
-curl -d '{"method": "Collector.GetMetricTypes", "params": [], "id": 1}' http://127.0.0.1:<REPLACE WITH PORT>
-```
+By default iostat executable binary are searched in the directories named by the PATH environment. 
 
-###### CollectMetrics
+## Documentation
 
-```
-curl -X POST -H "Content-Type: application/json" -d '{"method": "Collector.CollectMetrics", "params": [[{"namespace": ["intel","dummy", "bar"]},{"namespace": ["intel","dummy","foo"], "config": {"table": {"password": {"Value": "asdf"}}}}]], "id": 1}' http://127.0.0.1:<REPLACE WITH PORT> | python -m "json.tool"
-```
+To learn more about this plugin and iostat tool, visit:
+
+* [snap nfsclient examples](#examples)
+
+### Collected Metrics
+This plugin has the ability to gather the following metrics:
+
+**NFS Statistics**
+
+This collector has support for NFS v2, v3, and v4. These are all counters.
+
+Metric namespace prefix: /intel/nfs/client/nfsv{nfs_version_number}
+
+Name |
+------------ |
+getattr|
+setattr|
+lookup|
+access|
+readlink|
+read|
+write|
+create|
+mkdir|
+remove|
+rmdir|
+rename|
+link|
+readdir|
+readdirplus|
+fsstat|
+fsinfo|
+pathconf|
+
+
+
+**RPC statistics**
+
+NOTE: These are all counters
+
+Metric namespace prefix: /intel/nfs/client/rpc
+
+Name |
+------------ |
+calls |
+retransmission|
+authrefresh|
+
+**Other**
+
+Metric namespace prefix: /intel/nfs/client
+
+Name | Description
+------------ | -------------
+num_connections | The number of NFS connections from the client to NFS servers
+num_mounts | The number of NFS mounts on the client
+
+*Notes:*
+
+By default metrics are gathered once per second.
+
+### Examples
+This is still in progress
+
+### Roadmap
+This plugin is still in active development. As we launch this plugin, we have a few items in mind for the next few releases:
+- [ ] Add support for non-default NFS ports
+- [ ] Additional error handling
+
+If you have a feature request, please add it as an [issue](https://github.com/thomastaylor312/snap-plugin-collector-nfsclient/issues) 
+and/or submit a [pull request](https://github.com/thomastaylor312/snap-plugin-collector-nfsclient/pulls).
+
+## Community Support
+This repository is one of **many** plugins in the **snap**, a powerful telemetry agent framework. See the full project at 
+http://github.com/intelsdi-x/snap. To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support).
+
+
+## Contributing
+We love contributions! :heart_eyes:
+
+There is more than one way to give back, from examples to blogs to code updates.
+
+## License
+
+[snap](http://github.com/intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
+
+
+## Acknowledgements
+
+* Author: [Taylor Thomas](https://github.com/thomastaylor312)
+* Contributor: [Esteban Martinez](https://github.com/ecmartz)
