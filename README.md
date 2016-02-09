@@ -61,17 +61,17 @@ To install sysstat package from the official repositories simply use:
 #### To build the plugin binary:
 Get the source by running a `go get` to fetch the code:
 ```
-$ go get github.com/thomastaylor312/snap-plugin-collector-nfsclient
+$ go get github.com/intelsdi-x/snap-plugin-collector-nfsclient
 ```
 
 Build the plugin by running make within the cloned repo:
 ```
-$ cd $GOPATH/src/github.com/thomastaylor312/snap-plugin-collector-nfsclient && make
+$ cd $GOPATH/src/github.com/intelsdi-x/snap-plugin-collector-nfsclient && make
 ```
 This builds the plugin in `/build/rootfs/`
 
 #### Builds
-You can also download prebuilt binaries for OS X and Linux (64-bit) at the [releases](https://github.com/thomastaylor312/snap-plugin-collector-nfsclient/releases) page
+You can also download prebuilt binaries for OS X and Linux (64-bit) at the [releases](https://github.com/intelsdi-x/snap-plugin-collector-nfsclient/releases) page
 
 ### Configuration and Usage
 * Set up the [snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started)
@@ -151,8 +151,8 @@ This plugin is still in active development. As we launch this plugin, we have a 
 - [ ] Add support for non-default NFS ports
 - [ ] Additional error handling
 
-If you have a feature request, please add it as an [issue](https://github.com/thomastaylor312/snap-plugin-collector-nfsclient/issues) 
-and/or submit a [pull request](https://github.com/thomastaylor312/snap-plugin-collector-nfsclient/pulls).
+If you have a feature request, please add it as an [issue](https://github.com/intelsdi-x/snap-plugin-collector-nfsclient/issues) 
+and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-collector-nfsclient/pulls).
 
 ## Community Support
 This repository is one of **many** plugins in the **snap**, a powerful telemetry agent framework. See the full project at 
