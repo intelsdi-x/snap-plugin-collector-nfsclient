@@ -25,8 +25,9 @@ import (
 	"path"
 	"testing"
 
-	"github.com/intelsdi-x/pulse/control"
-	"github.com/intelsdi-x/pulse/plugin/helper"
+	"github.com/intelsdi-x/snap/control"
+	"github.com/intelsdi-x/snap/core"
+	"github.com/intelsdi-x/snap/plugin/helper"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -46,9 +47,10 @@ func TestDummyPluginLoad(t *testing.T) {
 		helper.BuildPlugin(PluginType, PluginName)
 		//
 		Convey("ensure plugin loads and responds", t, func() {
-			c := control.New()
+			c := control.New(control.GetDefaultConfig())
 			c.Start()
-			_, err := c.Load(PluginPath)
+			rp, _ := core.NewRequestedPlugin(PluginPath)
+			_, err := c.Load(rp)
 
 			So(err, ShouldBeNil)
 		})
