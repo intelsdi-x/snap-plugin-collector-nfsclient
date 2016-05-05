@@ -24,6 +24,7 @@ import (
 	"os"
 	"strings"
 	"time"
+
 	"github.com/intelsdi-x/snap/control/plugin"
 	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
 )
@@ -65,7 +66,7 @@ func (f *nfsCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 	if len(mts) == 0 {
 		return nil, nil
 	}
-	
+
 	//Find a way to regenerate the data on each task run automatically. We shouldn't do this manually
 	f.stats.regenerate()
 
@@ -77,9 +78,9 @@ func (f *nfsCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 		} else if namespaceContains("rpc", importantNamespace) {
 			mts[i].Data_ = f.stats.getRPCMetric(importantNamespace[1])
 		} else if namespaceContains("num_connections", importantNamespace) { //Then it is one of the top level
-			mts[i].Data_ = 	f.stats.getNumConnections(int64(2049))
+			mts[i].Data_ = f.stats.getNumConnections(int64(2049))
 		} else if namespaceContains("num_mounts", importantNamespace) {
-			mts[i].Data_ = 	f.stats.computeMounts()
+			mts[i].Data_ = f.stats.computeMounts()
 		}
 		// TODO: Error handling
 		mts[i].Source_, _ = os.Hostname()
@@ -92,7 +93,7 @@ func (f *nfsCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 //GetMetricTypes returns metric types
 func (f *nfsCollector) GetMetricTypes(cfg plugin.PluginConfigType) ([]plugin.PluginMetricType, error) {
 	mts := []plugin.PluginMetricType{}
-	
+
 	for metric := range f.stats.getMetricKeys() {
 		mts = append(mts, plugin.PluginMetricType{Namespace_: append(namespacePrefix, metricKeys[metric]...)})
 	}
