@@ -21,19 +21,20 @@ package nfsclient
 
 import (
 	// "fmt"
-	"os"
+
 	"strings"
 	"time"
 
 	"github.com/intelsdi-x/snap/control/plugin"
 	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
+	"github.com/intelsdi-x/snap/core"
 )
 
 const (
 	// Name of plugin
 	Name = "nfsclient"
 	// Version of plugin
-	Version = 1
+	Version = 2
 	// Type of plugin
 	Type = plugin.CollectorPluginType
 )
@@ -62,7 +63,7 @@ type getNFSStats interface {
 }
 
 // CollectMetrics collects metrics for testing
-func (f *nfsCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.PluginMetricType, error) {
+func (f *nfsCollector) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, error) {
 	if len(mts) == 0 {
 		return nil, nil
 	}
@@ -72,7 +73,7 @@ func (f *nfsCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 
 	for i := range mts {
 		//This throws away the common namespace prefix and returns only them important parts
-		importantNamespace := mts[i].Namespace_[len(namespacePrefix):]
+		importantNamespace := mts[i].Namespace().Strings()[len(namespacePrefix):]
 		if namespaceContains("nfs", importantNamespace) {
 			mts[i].Data_ = f.stats.getNFSMetric(importantNamespace[0], importantNamespace[1])
 		} else if namespaceContains("rpc", importantNamespace) {
@@ -83,7 +84,6 @@ func (f *nfsCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 			mts[i].Data_ = f.stats.computeMounts()
 		}
 		// TODO: Error handling
-		mts[i].Source_, _ = os.Hostname()
 		mts[i].Timestamp_ = time.Now()
 	}
 	// return nil, errors.New(fmt.Sprint(mts[0].Data_))
@@ -91,11 +91,12 @@ func (f *nfsCollector) CollectMetrics(mts []plugin.PluginMetricType) ([]plugin.P
 }
 
 //GetMetricTypes returns metric types
-func (f *nfsCollector) GetMetricTypes(cfg plugin.PluginConfigType) ([]plugin.PluginMetricType, error) {
-	mts := []plugin.PluginMetricType{}
+func (f *nfsCollector) GetMetricTypes(cfg plugin.ConfigType) ([]plugin.MetricType, error) {
+	mts := []plugin.MetricType{}
 
 	for metric := range f.stats.getMetricKeys() {
-		mts = append(mts, plugin.PluginMetricType{Namespace_: append(namespacePrefix, metricKeys[metric]...)})
+		ns := append(namespacePrefix, metricKeys[metric]...)
+		mts = append(mts, plugin.MetricType{Namespace_: core.NewNamespace(ns...)})
 	}
 	return mts, nil
 }
