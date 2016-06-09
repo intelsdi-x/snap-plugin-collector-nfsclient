@@ -230,13 +230,29 @@
 			"Rev": "c1cd2254a6dd314c9d73c338c12688c9325d85c6"
 		},
 		{
-			"ImportPath": "k8s.io/kubernetes/pkg/api/resource",
-			"Comment": "v1.3.0-alpha.3-297-g1c0ec9d",
-			"Rev": "1c0ec9dca99c55d1037b286df1210113db034604"
+			"ImportPath": "k8s.io/kubernetes/vendor/github.com/gogo/protobuf/proto",
+			"Comment": "v1.3.0-alpha.3-706-ga7c9c07",
+			"Rev": "a7c9c07b5acb3c8c25e918148a782cb70e86a48c"
 		},
 		{
-			"ImportPath": "speter.net/go/exp/math/dec/inf",
-			"Rev": "42ca6cd68aa922bc3f32f1e056e61b65945d9ad7"
+			"ImportPath": "k8s.io/kubernetes/vendor/github.com/spf13/pflag",
+			"Comment": "v1.3.0-alpha.3-706-ga7c9c07",
+			"Rev": "a7c9c07b5acb3c8c25e918148a782cb70e86a48c"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/conversion",
+			"Comment": "v1.3.0-alpha.3-706-ga7c9c07",
+			"Rev": "a7c9c07b5acb3c8c25e918148a782cb70e86a48c"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/vendor/speter.net/go/exp/math/dec/inf",
+			"Comment": "v1.3.0-alpha.3-706-ga7c9c07",
+			"Rev": "a7c9c07b5acb3c8c25e918148a782cb70e86a48c"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/third_party/forked/reflect",
+			"Comment": "v1.3.0-alpha.3-706-ga7c9c07",
+			"Rev": "a7c9c07b5acb3c8c25e918148a782cb70e86a48c"
 		}
 	]
 }
