@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# snap collector plugin - nfsclient
+# Snap collector plugin - nfsclient
 
 This plugin collects NFS client statistics from any system that has NFS tools installed
 
@@ -25,7 +25,7 @@ Used for monitoring the rate of change in NFS ops
 
 The intention for this plugin is to identify which hosts could be having slowness issues or problems with NFS.
 
-This plugin is used in the [snap framework] (http://github.com/intelsdi-x/snap).
+This plugin is used in the [Snap framework] (http://github.com/intelsdi-x/snap).
 
 
 1. [Getting Started](#getting-started)
@@ -48,8 +48,8 @@ In order to use this plugin you need "nfs-client" to be installed on a Linux tar
 ### System Requirements
 
 * Linux OS
-* [nfs-client package] (#installation)
-* [golang 1.5+](https://golang.org/dl/)
+* [nfs-client package](#installation)
+* [golang 1.6+](https://golang.org/dl/)
 
 ### Installation
 
@@ -68,15 +68,13 @@ Build the plugin by running make within the cloned repo:
 ```
 $ cd $GOPATH/src/github.com/intelsdi-x/snap-plugin-collector-nfsclient && make
 ```
-This builds the plugin in `/build/rootfs/`
+This builds the plugin in `./build`
 
 #### Builds
 You can also download prebuilt binaries for OS X and Linux (64-bit) at the [releases](https://github.com/intelsdi-x/snap-plugin-collector-nfsclient/releases) page
 
 ### Configuration and Usage
-* Set up the [snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started)
-* Ensure `$SNAP_PATH` is exported  
-`export SNAP_PATH=$GOPATH/src/github.com/intelsdi-x/snap/build`
+* Set up the [Snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started)
 
 By default iostat executable binary are searched in the directories named by the PATH environment. 
 
@@ -84,7 +82,7 @@ By default iostat executable binary are searched in the directories named by the
 
 To learn more about this plugin:
 
-* [snap nfsclient examples](#examples)
+* [Snap nfsclient examples](#examples)
 
 ### Collected Metrics
 This plugin has the ability to gather the following metrics:
@@ -155,7 +153,7 @@ If you have a feature request, please add it as an [issue](https://github.com/in
 and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-collector-nfsclient/pulls).
 
 ## Community Support
-This repository is one of **many** plugins in the **snap**, a powerful telemetry agent framework. See the full project at 
+This repository is one of **many** plugins in the **Snap**, a powerful telemetry agent framework. See the full project at
 http://github.com/intelsdi-x/snap. To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support).
 
 
@@ -166,7 +164,7 @@ There is more than one way to give back, from examples to blogs to code updates.
 
 ## License
 
-[snap](http://github.com/intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
+[Snap](http://github.com/intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
 
 
 ## Acknowledgements
