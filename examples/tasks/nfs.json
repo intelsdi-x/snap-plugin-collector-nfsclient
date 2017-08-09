@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "schedule": {
+    "type": "simple",
+    "interval": "5s"
+  },
+  "workflow": {
+    "collect": {
+      "metrics": {
+        "/intel/nfs/client/num_connections": {}
+      },
+      "publish": [
+        {
+          "plugin_name": "file",
+          "config": {
+            "file": "/tmp/published_nfs.log"
+          }
+        }
+      ]
+    }
+  }
+}
